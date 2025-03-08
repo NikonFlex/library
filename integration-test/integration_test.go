@@ -559,6 +559,9 @@ func TestLibraryWithoutInMemoryInvariant(t *testing.T) {
 			Name:      bookName,
 			AuthorIds: []string{authorID},
 		})
+
+		require.Equal(t, []string{registerRes.GetId()}, addRes.GetBook().GetAuthorId())
+
 		bookId := addRes.GetBook().GetId()
 
 		_, err = client.UpdateBook(ctx, &UpdateBookRequest{
