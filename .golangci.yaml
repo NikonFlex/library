@@ -79,6 +79,7 @@ linters:
     - tparallel
     - usestdlibvars
     - nolintlint
+    - nilnil
 
 issues:
   exclude-use-default: false
