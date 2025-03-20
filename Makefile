@@ -80,7 +80,7 @@ bin-deps: .bin-deps
 
 .bin-deps: export GOBIN := $(LOCAL_BIN)
 .bin-deps: .create-bin .install-protoc
-	GOBIN=$(LOCAL_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0 && \
+	GOBIN=$(LOCAL_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 && \
 	GOBIN=$(LOCAL_BIN) go install github.com/rakyll/gotest@v0.0.6 && \
 	go install github.com/easyp-tech/easyp/cmd/easyp@latest && \
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.18.1 && \
