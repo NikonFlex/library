@@ -1,56 +1,31 @@
 run:
-  timeout: 5m
+  concurrency: 8
   issues-exit-code: 1
   tests: true
-  allow-parallel-runners: true
-  go: '1.24'
-
-output:
-  formats:
-    - format: colored-line-number
-      path: stderr
-  print-issued-lines: true
-  print-linter-name: true
-  show-stats: true
 
 linters-settings:
-  nolintlint:
-    require-explanation: true
-    require-specific: true
-  nestif:
-    min-complexity: 7
-  govet:
-    enable:
-      - shadow
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  nakedret:
-    max-func-lines: 25
-  gocyclo:
-    min-complexity: 10
-  gocognit:
-    min-complexity: 10
-  mnd:
-    ignored-numbers:
-      - '10'
-      - '64'
-  exhaustive:
-    default-signifies-exhaustive: true
+  revive:
+    severity: error
+    confidence: 0.1
+    rules:
+      - name: comment-spacings
+        severity: warning
+        disabled: false
+        exclude: [ "" ]
+        arguments:
+          - mypragma
+          - otherpragma
 
 linters:
-  disable-all: true
   enable:
     - revive
-    - govet
     - errcheck
-    - ineffassign
-    - typecheck
-    - goconst
-    - goimports
     - gosimple
+    - govet
+    - ineffassign
     - staticcheck
     - unused
+<<<<<<< HEAD
     - paralleltest
     - errname
     - makezero
@@ -79,16 +54,12 @@ linters:
     - tparallel
     - usestdlibvars
     - nolintlint
+=======
+>>>>>>> 55b6be7 (temp)
 
 issues:
-  exclude-use-default: false
-  exclude-dirs:
-    - \.\/\.cache\/.*
-    - bin
-    - vendor
-    - var
-    - tmp
   exclude-files:
+<<<<<<< HEAD
     - \.pb\.go$
     - \.pb\.gw\.go$
     - \.pb\.scratch\.go$
@@ -137,3 +108,10 @@ issues:
     - should have a package comment, unless it's in another file for this package
     - don't use an underscore in package name
     - exported (.+) returns unexported type (.+) which can be annoying to use
+=======
+    - integration_test.go
+    - library.pb.go
+    - library_grpc.pb.go
+  exclude-use-default: true
+  max-issues-per-linter: 0
+>>>>>>> 55b6be7 (temp)
