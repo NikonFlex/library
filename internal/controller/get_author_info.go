@@ -18,7 +18,7 @@ func (impl *implementation) GetAuthorInfo(ctx context.Context, request *library.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	authorID := uuid.Must(uuid.Parse(request.Id))
+	authorID := uuid.Must(uuid.Parse(request.GetId()))
 	author, err := impl.authorsUseCase.GetAuthor(ctx, authorID)
 	if err != nil {
 		impl.logger.Error("GetAuthorInfo controller: " + err.Error())

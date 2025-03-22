@@ -19,7 +19,7 @@ func (impl *implementation) AddBook(ctx context.Context, request *library.AddBoo
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	book, err := impl.booksUseCase.AddBook(ctx, request.Name, impl.stringsToUUIDs(request.AuthorIds))
+	book, err := impl.booksUseCase.AddBook(ctx, request.GetName(), impl.stringsToUUIDs(request.GetAuthorIds()))
 
 	impl.logger.Info("AddBook controller: TIME " + book.CreatedAt.String())
 	if err != nil {

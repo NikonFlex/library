@@ -18,8 +18,8 @@ func (impl *implementation) ChangeAuthorInfo(ctx context.Context, request *libra
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	authorID := uuid.Must(uuid.Parse(request.Id))
-	_, err := impl.authorsUseCase.UpdateAuthor(ctx, authorID, request.Name)
+	authorID := uuid.Must(uuid.Parse(request.GetId()))
+	_, err := impl.authorsUseCase.UpdateAuthor(ctx, authorID, request.GetName())
 	if err != nil {
 		impl.logger.Error("ChangeAuthorInfo controller: " + err.Error())
 		return nil, impl.libraryToGrpcErr(err)

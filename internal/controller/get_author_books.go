@@ -17,7 +17,7 @@ func (impl *implementation) GetAuthorBooks(request *library.GetAuthorBooksReques
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	authorID := uuid.Must(uuid.Parse(request.AuthorId))
+	authorID := uuid.Must(uuid.Parse(request.GetAuthorId()))
 	books, err := impl.booksUseCase.GetAuthorBooks(stream.Context(), authorID)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())

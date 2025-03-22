@@ -25,7 +25,7 @@ func NewMockLibraryGetAuthorBooksServer(ctx context.Context, cancel context.Canc
 }
 
 // RecvMsg implements library.Library_GetAuthorBooksServer.
-func (*MockLibraryGetAuthorBooksServer) RecvMsg(m any) error {
+func (*MockLibraryGetAuthorBooksServer) RecvMsg(_ any) error {
 	panic("unimplemented")
 }
 
@@ -35,7 +35,7 @@ func (m *MockLibraryGetAuthorBooksServer) SendHeader(metadata.MD) error {
 }
 
 // SendMsg implements library.Library_GetAuthorBooksServer.
-func (*MockLibraryGetAuthorBooksServer) SendMsg(m any) error {
+func (*MockLibraryGetAuthorBooksServer) SendMsg(_ any) error {
 	panic("unimplemented")
 }
 
