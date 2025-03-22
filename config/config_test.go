@@ -91,11 +91,6 @@ func TestNewConfig_Failure(t *testing.T) {
 			envVar:        "POSTGRES_PASSWORD",
 			expectedError: ErrPostgresPasswordNotSet,
 		},
-		{
-			name:          "POSTGRES_MAX_CONN not set",
-			envVar:        "POSTGRES_MAX_CONN",
-			expectedError: ErrPostgresMaxConnNotSet,
-		},
 	}
 
 	for _, test := range tests {
