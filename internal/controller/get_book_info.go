@@ -20,7 +20,7 @@ func (impl *implementation) GetBookInfo(ctx context.Context, request *library.Ge
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	bookID := uuid.Must(uuid.Parse(request.Id))
+	bookID := uuid.Must(uuid.Parse(request.GetId()))
 	book, err := impl.booksUseCase.GetBook(ctx, bookID)
 	if err != nil {
 		impl.logger.Error("GetBookInfo controller: " + err.Error())

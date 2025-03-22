@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,14 +30,11 @@ func Run(logger *zap.Logger, cfg *config.Config) {
 
 	if err != nil {
 		logger.Error("can not create pgxpool", zap.Error(err))
-		os.Exit(-1)
 	}
 
 	defer dbPool.Close()
 	db.SetupPostgres(dbPool, logger)
 
-	// booksRepository := repository.NewBooksInMemoryRepository(logger)
-	// authorsRepository := repository.NewAuthorsInMemoryRepository(logger)
 	postgres := repository.NewPostgresRepository(dbPool)
 	useCases := library.New(logger, postgres, postgres)
 
@@ -48,7 +44,6 @@ func Run(logger *zap.Logger, cfg *config.Config) {
 	go runGrpc(cfg, logger, ctrl)
 
 	<-ctx.Done()
-	time.Sleep(time.Second * 3)
 }
 
 func runRest(ctx context.Context, cfg *config.Config, logger *zap.Logger) {

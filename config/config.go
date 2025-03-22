@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 )
 
@@ -90,11 +92,10 @@ func NewConfig() (*Config, error) {
 	}
 	cfg.PG.MaxConn = pgMaxConn
 
-	cfg.PG.URL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		cfg.PG.User,
-		cfg.PG.Password,
-		cfg.PG.Host,
-		cfg.PG.Port,
+	cfg.PG.URL = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		url.PathEscape(cfg.PG.User),
+		url.PathEscape(cfg.PG.Password),
+		net.JoinHostPort(cfg.PG.Host, cfg.PG.Port),
 		cfg.PG.DB,
 	)
 

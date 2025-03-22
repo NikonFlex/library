@@ -99,7 +99,7 @@ func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (
 			return entity.Book{}, fmt.Errorf("add book query failed: %w", err)
 		}
 
-		if err := insertAuthorsBatch(tx, ctx, addedBook.ID, book.AuthorIDs); err != nil {
+		if err := insertAuthorsBatch(ctx, tx, addedBook.ID, book.AuthorIDs); err != nil {
 			return entity.Book{}, fmt.Errorf("add book's authors query failed: %w", err)
 		}
 
@@ -141,7 +141,6 @@ func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (
 	}
 
 	return book, nil
-
 }
 
 func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID, name string, authorIDs uuid.UUIDs) (entity.Book, error) {
@@ -172,7 +171,7 @@ func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID
 			return entity.Book{}, fmt.Errorf("delete previous book's author query failed: %w", err)
 		}
 
-		if err := insertAuthorsBatch(tx, ctx, bookID, authorIDs); err != nil {
+		if err := insertAuthorsBatch(ctx, tx, bookID, authorIDs); err != nil {
 			return entity.Book{}, fmt.Errorf("add book's authors query failed: %w", err)
 		}
 
@@ -252,7 +251,7 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, fn func(pgx.T
 		return zero, err
 	}
 
-	if err := tx.Commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return zero, err
 	}
 
@@ -263,7 +262,7 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, fn func(pgx.T
 	return result, nil
 }
 
-func insertAuthorsBatch(tx pgx.Tx, ctx context.Context, bookID uuid.UUID, authorIDs []uuid.UUID) error {
+func insertAuthorsBatch(ctx context.Context, tx pgx.Tx, bookID uuid.UUID, authorIDs []uuid.UUID) error {
 	batch := &pgx.Batch{}
 	for _, authorID := range authorIDs {
 		batch.Queue(
