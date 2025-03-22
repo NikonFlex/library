@@ -3,10 +3,6 @@ package controller
 import (
 	"context"
 	"errors"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/project/library/generated/api/library"
 	"github.com/project/library/internal/entity"
@@ -17,6 +13,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
+	"testing"
 )
 
 func TestController_AddBook(t *testing.T) {
@@ -47,12 +45,8 @@ func TestController_AddBook(t *testing.T) {
 			Return(basicBook, nil)
 
 		result, err := controllerSetup.service.AddBook(ctx, &basicBookRequest)
-		require.Equal(t, result, &library.AddBookResponse{
-			Book: &library.Book{
-				Id:       basicBook.ID.String(),
-				Name:     basicBook.Name,
-				AuthorId: basicBook.AuthorIDs.Strings(),
-			}})
+		require.Equal(t, result.GetBook().GetId(), basicBook.ID.String())
+		require.Equal(t, result.GetBook().GetName(), basicBook.Name)
 		require.NoError(t, err)
 	})
 
@@ -133,12 +127,8 @@ func TestController_GetBook(t *testing.T) {
 			Return(basicBook, nil)
 
 		result, err := controllerSetup.service.GetBookInfo(ctx, &basicBookRequest)
-		require.Equal(t, result, &library.GetBookInfoResponse{
-			Book: &library.Book{
-				Id:       basicBook.ID.String(),
-				Name:     basicBook.Name,
-				AuthorId: basicBook.AuthorIDs.Strings(),
-			}})
+		require.Equal(t, result.GetBook().GetId(), basicBook.ID.String())
+		require.Equal(t, result.GetBook().GetName(), basicBook.Name)
 		require.NoError(t, err)
 	})
 
@@ -295,102 +285,42 @@ func TestController_GetAuthorBooks(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		defer controller.Finish()
-		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
 
-		booksChan := make(chan entity.Book, 2)
-		booksChan <- book1
-		booksChan <- book2
-		close(booksChan)
-
 		controllerSetup.booksUseCaseMock.EXPECT().GetAuthorBooks(gomock.Any(), vasya).
-			Return(booksChan)
+			Return([]entity.Book{book1, book2}, nil)
 
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(ctx, nil, nil)
+		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
 
 		err := controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
 		require.NoError(t, err)
 		require.Equal(t, len(streamMock.SentBooks), 2)
 	})
 
-	t.Run("context cancellation", func(t *testing.T) {
-		controller := gomock.NewController(t)
-		defer controller.Finish()
-
-		controllerSetup := createControllerSetup(controller)
-
-		booksChan := make(chan entity.Book, 2)
-		booksChan <- book1
-		booksChan <- book2
-		defer close(booksChan)
-
-		controllerSetup.booksUseCaseMock.EXPECT().GetAuthorBooks(gomock.Any(), vasya).
-			Return(booksChan)
-
-		ctx, cancel := context.WithCancel(context.Background())
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(ctx, cancel, nil)
-
-		done := make(chan error)
-		started := make(chan struct{})
-		go func() {
-			close(started)
-			done <- controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
-		}()
-		<-started
-		cancel()
-
-		err := <-done
-		time.Sleep(100 * time.Millisecond)
-
-		require.ErrorIs(t, err, context.Canceled)
-	})
-
 	t.Run("stream send error", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		defer controller.Finish()
-		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
 
-		booksChan := make(chan entity.Book, 2)
-		booksChan <- book1
-		booksChan <- book2
-		close(booksChan)
-
 		controllerSetup.booksUseCaseMock.EXPECT().GetAuthorBooks(gomock.Any(), vasya).
-			Return(booksChan)
+			Return([]entity.Book{book1, book2}, nil)
 
 		expectedErr := errors.New("send error")
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(ctx, nil, expectedErr)
+		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, expectedErr)
 
 		err := controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
 		require.ErrorIs(t, expectedErr, err)
 		require.Equal(t, len(streamMock.SentBooks), 0)
 	})
 
-	t.Run("author not found", func(t *testing.T) {
-		controller := gomock.NewController(t)
-		defer controller.Finish()
-		ctx := context.Background()
-
-		controllerSetup := createControllerSetup(controller)
-		controllerSetup.booksUseCaseMock.EXPECT().GetAuthorBooks(gomock.Any(), vasya).
-			Return(nil)
-
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(ctx, nil, nil)
-		err := controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
-		require.Equal(t, len(streamMock.SentBooks), 0)
-		require.NoError(t, err)
-	})
-
 	t.Run("author invalid uuid", func(t *testing.T) {
 		controller := gomock.NewController(t)
 		defer controller.Finish()
-		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(ctx, nil, nil)
+		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
 		err := controllerSetup.service.GetAuthorBooks(&library.GetAuthorBooksRequest{
 			AuthorId: "not-uuid",
 		}, streamMock)

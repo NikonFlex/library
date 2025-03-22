@@ -17,7 +17,7 @@ func (impl *implementation) RegisterAuthor(ctx context.Context, request *library
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	author, err := impl.authorsUseCase.AddAuthor(ctx, request.Name)
+	author, err := impl.authorsUseCase.AddAuthor(ctx, request.GetName())
 	if err != nil {
 		impl.logger.Error("RegisterAuthor controller: " + err.Error())
 		return nil, impl.libraryToGrpcErr(err)
