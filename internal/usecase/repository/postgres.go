@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,17 +18,19 @@ var _ BooksRepository = (*postgresRepository)(nil)
 var _ AuthorsRepository = (*postgresRepository)(nil)
 
 type postgresRepository struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
+	logger *zap.Logger
 }
 
-func NewPostgresRepository(db *pgxpool.Pool) *postgresRepository {
+func NewPostgresRepository(db *pgxpool.Pool, logger *zap.Logger) *postgresRepository {
 	return &postgresRepository{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
 func (repo *postgresRepository) AddAuthor(ctx context.Context, author entity.Author) (entity.Author, error) {
-	return withTransaction(ctx, repo.db, func(tx pgx.Tx) (entity.Author, error) {
+	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
 		const query = `
 		INSERT INTO author (name) 
 		VALUES ($1) 
@@ -63,7 +66,7 @@ func (repo *postgresRepository) GetAuthor(ctx context.Context, authorID uuid.UUI
 }
 
 func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.UUID, name string) (entity.Author, error) {
-	return withTransaction(ctx, repo.db, func(tx pgx.Tx) (entity.Author, error) {
+	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
 		const query = `
         UPDATE author
 		SET name = $1
@@ -85,7 +88,7 @@ func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.
 }
 
 func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (entity.Book, error) {
-	return withTransaction(ctx, repo.db, func(tx pgx.Tx) (entity.Book, error) {
+	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryAddBook = `
 		INSERT INTO book (name) 
 		VALUES ($1) 
@@ -144,7 +147,7 @@ func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (
 }
 
 func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID, name string, authorIDs uuid.UUIDs) (entity.Book, error) {
-	return withTransaction(ctx, repo.db, func(tx pgx.Tx) (entity.Book, error) {
+	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryUpdateBook = `
 		UPDATE book
 		SET name = $1
@@ -239,12 +242,18 @@ func isForeignKeyViolation(err error) bool {
 	return false
 }
 
-func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, fn func(pgx.Tx) (T, error)) (T, error) {
+func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.Logger, fn func(pgx.Tx) (T, error)) (T, error) {
 	var zero T
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return zero, err
 	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			logger.Error("failed to rollback transaction", zap.Error(err))
+		}
+	}(tx, ctx)
 
 	result, err := fn(tx)
 	if err != nil {
@@ -253,10 +262,6 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, fn func(pgx.T
 
 	if err = tx.Commit(ctx); err != nil {
 		return zero, err
-	}
-
-	if err = tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-		return zero, fmt.Errorf("failed to rollback transaction: %w", err)
 	}
 
 	return result, nil
