@@ -13,12 +13,10 @@ type MockLibraryGetAuthorBooksServer struct {
 	SendError error
 	CancelCtx context.CancelFunc
 	mu        sync.Mutex
-	ctx       context.Context
 }
 
 func NewMockLibraryGetAuthorBooksServer(cancel context.CancelFunc, sendError error) *MockLibraryGetAuthorBooksServer {
 	return &MockLibraryGetAuthorBooksServer{
-		ctx:       context.Background(),
 		SendError: sendError,
 		CancelCtx: cancel,
 	}
@@ -62,7 +60,7 @@ func (m *MockLibraryGetAuthorBooksServer) Send(book *library.Book) error {
 
 // Context возвращает контекст мока
 func (m *MockLibraryGetAuthorBooksServer) Context() context.Context {
-	return m.ctx
+	return context.Background()
 }
 
 // Reset очищает состояние мока

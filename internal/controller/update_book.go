@@ -18,7 +18,7 @@ func (impl *implementation) UpdateBook(ctx context.Context, request *library.Upd
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	bookID := uuid.Must(uuid.Parse(request.Id))
+	bookID := uuid.Must(uuid.Parse(request.GetId()))
 	_, err := impl.booksUseCase.UpdateBook(ctx, bookID, request.GetName(), impl.stringsToUUIDs(request.GetAuthorIds()))
 	if err != nil {
 		impl.logger.Error("UpdateBook controller: " + err.Error())
