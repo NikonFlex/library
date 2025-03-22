@@ -16,9 +16,9 @@ type MockLibraryGetAuthorBooksServer struct {
 	ctx       context.Context
 }
 
-func NewMockLibraryGetAuthorBooksServer(ctx context.Context, cancel context.CancelFunc, sendError error) *MockLibraryGetAuthorBooksServer {
+func NewMockLibraryGetAuthorBooksServer(cancel context.CancelFunc, sendError error) *MockLibraryGetAuthorBooksServer {
 	return &MockLibraryGetAuthorBooksServer{
-		ctx:       ctx,
+		ctx:       context.Background(),
 		SendError: sendError,
 		CancelCtx: cancel,
 	}

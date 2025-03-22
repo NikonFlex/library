@@ -19,7 +19,7 @@ func (impl *implementation) UpdateBook(ctx context.Context, request *library.Upd
 	}
 
 	bookID := uuid.Must(uuid.Parse(request.Id))
-	_, err := impl.booksUseCase.UpdateBook(ctx, bookID, request.Name, impl.stringsToUUIDs(request.AuthorIds))
+	_, err := impl.booksUseCase.UpdateBook(ctx, bookID, request.GetName(), impl.stringsToUUIDs(request.GetAuthorIds()))
 	if err != nil {
 		impl.logger.Error("UpdateBook controller: " + err.Error())
 		return nil, impl.libraryToGrpcErr(err)
