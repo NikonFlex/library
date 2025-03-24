@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/project/library/generated/api/library"
 	"github.com/project/library/internal/entity"
-	custom_mocks "github.com/project/library/mocks-custom"
-	generated_mocks "github.com/project/library/mocks-generated"
+	custommocks "github.com/project/library/mocks-custom"
+	generatedmocks "github.com/project/library/mocks-generated"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -37,7 +37,9 @@ func TestController_AddBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -54,7 +56,9 @@ func TestController_AddBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -70,7 +74,9 @@ func TestController_AddBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -86,7 +92,9 @@ func TestController_AddBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -119,7 +127,9 @@ func TestController_GetBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -136,7 +146,9 @@ func TestController_GetBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -152,7 +164,9 @@ func TestController_GetBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -192,7 +206,9 @@ func TestController_UpdateBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -208,7 +224,9 @@ func TestController_UpdateBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -224,7 +242,9 @@ func TestController_UpdateBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -240,7 +260,9 @@ func TestController_UpdateBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -258,7 +280,9 @@ func TestController_UpdateBook(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -284,14 +308,16 @@ func TestController_GetAuthorBooks(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 
 		controllerSetup := createControllerSetup(controller)
 
 		controllerSetup.booksUseCaseMock.EXPECT().GetAuthorBooks(gomock.Any(), vasya).
 			Return([]entity.Book{book1, book2}, nil)
 
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
+		streamMock := custommocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
 
 		err := controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
 		require.NoError(t, err)
@@ -300,7 +326,9 @@ func TestController_GetAuthorBooks(t *testing.T) {
 
 	t.Run("stream send error", func(t *testing.T) {
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 
 		controllerSetup := createControllerSetup(controller)
 
@@ -308,7 +336,7 @@ func TestController_GetAuthorBooks(t *testing.T) {
 			Return([]entity.Book{book1, book2}, nil)
 
 		expectedErr := errors.New("send error")
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, expectedErr)
+		streamMock := custommocks.NewMockLibraryGetAuthorBooksServer(nil, expectedErr)
 
 		err := controllerSetup.service.GetAuthorBooks(&basicRequest, streamMock)
 		require.ErrorIs(t, expectedErr, err)
@@ -317,10 +345,12 @@ func TestController_GetAuthorBooks(t *testing.T) {
 
 	t.Run("author invalid uuid", func(t *testing.T) {
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 
 		controllerSetup := createControllerSetup(controller)
-		streamMock := custom_mocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
+		streamMock := custommocks.NewMockLibraryGetAuthorBooksServer(nil, nil)
 		err := controllerSetup.service.GetAuthorBooks(&library.GetAuthorBooksRequest{
 			AuthorId: "not-uuid",
 		}, streamMock)
@@ -347,7 +377,9 @@ func TestController_AddAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -365,7 +397,9 @@ func TestController_AddAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -381,7 +415,9 @@ func TestController_AddAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -397,7 +433,9 @@ func TestController_AddAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -434,7 +472,9 @@ func TestController_GetAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -453,7 +493,9 @@ func TestController_GetAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -469,7 +511,9 @@ func TestController_GetAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -506,7 +550,9 @@ func TestController_UpdateAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -522,7 +568,9 @@ func TestController_UpdateAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -538,7 +586,9 @@ func TestController_UpdateAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -555,7 +605,9 @@ func TestController_UpdateAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -572,7 +624,9 @@ func TestController_UpdateAuthor(t *testing.T) {
 		t.Parallel()
 
 		controller := gomock.NewController(t)
-		defer controller.Finish()
+		t.Cleanup(func() {
+			controller.Finish()
+		})
 		ctx := context.Background()
 
 		controllerSetup := createControllerSetup(controller)
@@ -587,14 +641,14 @@ func TestController_UpdateAuthor(t *testing.T) {
 }
 
 type controllerSetup struct {
-	booksUseCaseMock   generated_mocks.MockBooksUseCase
-	authorsUseCaseMock generated_mocks.MockAuthorsUseCase
+	booksUseCaseMock   generatedmocks.MockBooksUseCase
+	authorsUseCaseMock generatedmocks.MockAuthorsUseCase
 	service            library.LibraryServer
 }
 
 func createControllerSetup(controller *gomock.Controller) *controllerSetup {
-	booksUseCaseMock := generated_mocks.NewMockBooksUseCase(controller)
-	authorsUseCaseMock := generated_mocks.NewMockAuthorsUseCase(controller)
+	booksUseCaseMock := generatedmocks.NewMockBooksUseCase(controller)
+	authorsUseCaseMock := generatedmocks.NewMockAuthorsUseCase(controller)
 	logger := zap.NewNop()
 
 	return &controllerSetup{

@@ -30,6 +30,9 @@ func NewPostgresRepository(db *pgxpool.Pool, logger *zap.Logger) *postgresReposi
 }
 
 func (repo *postgresRepository) AddAuthor(ctx context.Context, author entity.Author) (entity.Author, error) {
+	repo.logger.Info("AddAuthor repo: started")
+	defer repo.logger.Info("AddAuthor repo: finished")
+
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
 		const query = `
 		INSERT INTO author (name) 
@@ -46,6 +49,8 @@ func (repo *postgresRepository) AddAuthor(ctx context.Context, author entity.Aut
 }
 
 func (repo *postgresRepository) GetAuthor(ctx context.Context, authorID uuid.UUID) (entity.Author, error) {
+	repo.logger.Info("GetAuthor repo: started")
+	defer repo.logger.Info("GetAuthor repo: finished")
 	const query = `
         SELECT id, name
         FROM author 
@@ -66,6 +71,8 @@ func (repo *postgresRepository) GetAuthor(ctx context.Context, authorID uuid.UUI
 }
 
 func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.UUID, name string) (entity.Author, error) {
+	repo.logger.Info("UpdateAuthor repo: started")
+	defer repo.logger.Info("UpdateAuthor repo: finished")
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
 		const query = `
         UPDATE author
@@ -88,6 +95,8 @@ func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.
 }
 
 func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (entity.Book, error) {
+	repo.logger.Info("AddBook repo: started")
+	defer repo.logger.Info("AddBook repo: finished")
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryAddBook = `
 		INSERT INTO book (name) 
@@ -112,6 +121,8 @@ func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (
 }
 
 func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (entity.Book, error) {
+	repo.logger.Info("GetBook repo: started")
+	defer repo.logger.Info("GetBook repo: finished")
 	const query = `
         SELECT 
             id,
@@ -147,6 +158,8 @@ func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (
 }
 
 func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID, name string, authorIDs uuid.UUIDs) (entity.Book, error) {
+	repo.logger.Info("UpdateBook repo: started")
+	defer repo.logger.Info("UpdateBook repo: finished")
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryUpdateBook = `
 		UPDATE book
@@ -184,6 +197,8 @@ func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID
 }
 
 func (repo *postgresRepository) GetAuthorBooks(ctx context.Context, authorID uuid.UUID) ([]entity.Book, error) {
+	repo.logger.Info("GetAuthorBooks repo: started")
+	defer repo.logger.Info("GetAuthorBooks repo: finished")
 	const query = `
         SELECT 
             book.id, 
@@ -243,6 +258,8 @@ func isForeignKeyViolation(err error) bool {
 }
 
 func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.Logger, fn func(pgx.Tx) (T, error)) (T, error) {
+	logger.Info("Transaction started")
+	defer logger.Info("Transaction finished")
 	var zero T
 	tx, err := db.Begin(ctx)
 	if err != nil {
@@ -253,6 +270,7 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.L
 		if err != nil {
 			logger.Error("failed to rollback transaction", zap.Error(err))
 		}
+		logger.Info("Transaction rolled back")
 	}(tx, ctx)
 
 	result, err := fn(tx)
@@ -261,8 +279,11 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.L
 	}
 
 	if err = tx.Commit(ctx); err != nil {
+		logger.Info("Not commited", zap.Error(err))
 		return zero, err
 	}
+
+	logger.Info("Commited")
 
 	return result, nil
 }

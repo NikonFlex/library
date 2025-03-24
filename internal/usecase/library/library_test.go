@@ -54,7 +54,9 @@ func TestLibrary_BooksUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
@@ -96,7 +98,9 @@ func TestLibrary_BooksUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
@@ -150,7 +154,9 @@ func TestLibrary_BooksUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
@@ -239,7 +245,9 @@ func TestLibrary_AuthorsUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
@@ -281,7 +289,9 @@ func TestLibrary_AuthorsUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
@@ -325,7 +335,9 @@ func TestLibrary_AuthorsUseCase(t *testing.T) {
 				t.Parallel()
 
 				controller := gomock.NewController(t)
-				defer controller.Finish()
+				t.Cleanup(func() {
+					controller.Finish()
+				})
 				ctx := context.Background()
 
 				testSetup := createSetup(controller)
