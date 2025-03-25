@@ -3,6 +3,9 @@ package controller
 import (
 	"context"
 	"errors"
+	"strings"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/project/library/generated/api/library"
 	"github.com/project/library/internal/entity"
@@ -13,8 +16,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
-	"testing"
 )
 
 func TestController_AddBook(t *testing.T) {

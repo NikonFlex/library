@@ -16,6 +16,6 @@ type Book struct {
 }
 
 var (
-	ErrBookNotFound      = errors.New("Book not found")
-	ErrBookAlreadyExists = errors.New("Book already exists")
+	ErrBookNotFound      = errors.New("book not found")
+	ErrBookAlreadyExists = errors.New("book already exists")
 )

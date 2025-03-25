@@ -35,7 +35,7 @@ func Run(logger *zap.Logger, cfg *config.Config) {
 	defer dbPool.Close()
 	db.SetupPostgres(dbPool, logger)
 
-	postgres := repository.NewPostgresRepository(dbPool, logger)
+	postgres := repository.New(dbPool, logger)
 	useCases := library.New(logger, postgres, postgres)
 
 	ctrl := controller.New(logger, useCases, useCases)

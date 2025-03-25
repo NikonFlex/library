@@ -41,56 +41,33 @@ var (
 	ErrPostgresMaxConnNotSet  = errors.New("POSTGRES_MAX_CONN environment variable not set")
 )
 
-func NewConfig() (*Config, error) {
+func New() (*Config, error) {
 	cfg := &Config{}
 
-	grpcPort, err := getEnv("GRPC_PORT")
-	if err != nil {
-		return nil, ErrGRPCPortNotSet
+	if err := cfg.readGrpcPort(); err != nil {
+		return nil, err
 	}
-	cfg.GRPC.Port = grpcPort
-
-	grpcGatewayPort, err := getEnv("GRPC_GATEWAY_PORT")
-	if err != nil {
-		return nil, ErrGRPCGatewayPortNotSet
+	if err := cfg.readGrpcGatewayPort(); err != nil {
+		return nil, err
 	}
-	cfg.GRPC.GatewayPort = grpcGatewayPort
-
-	pgHost, err := getEnv("POSTGRES_HOST")
-	if err != nil {
-		return nil, ErrPostgresHostNotSet
+	if err := cfg.readPGHost(); err != nil {
+		return nil, err
 	}
-	cfg.PG.Host = pgHost
-
-	pgPort, err := getEnv("POSTGRES_PORT")
-	if err != nil {
-		return nil, ErrPostgresPortNotSet
+	if err := cfg.readPGUser(); err != nil {
+		return nil, err
 	}
-	cfg.PG.Port = pgPort
-
-	pgDB, err := getEnv("POSTGRES_DB")
-	if err != nil {
-		return nil, ErrPostgresDBNotSet
+	if err := cfg.readPGPort(); err != nil {
+		return nil, err
 	}
-	cfg.PG.DB = pgDB
-
-	pgUser, err := getEnv("POSTGRES_USER")
-	if err != nil {
-		return nil, ErrPostgresUserNotSet
+	if err := cfg.readPGPassword(); err != nil {
+		return nil, err
 	}
-	cfg.PG.User = pgUser
-
-	pgPassword, err := getEnv("POSTGRES_PASSWORD")
-	if err != nil {
-		return nil, ErrPostgresPasswordNotSet
+	if err := cfg.readPGDB(); err != nil {
+		return nil, err
 	}
-	cfg.PG.Password = pgPassword
-
-	pgMaxConn, err := getEnv("POSTGRES_MAX_CONN")
-	if err != nil {
-		return nil, ErrPostgresMaxConnNotSet
+	if err := cfg.readPGMaxConn(); err != nil {
+		return nil, err
 	}
-	cfg.PG.MaxConn = pgMaxConn
 
 	cfg.PG.URL = fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
 		url.PathEscape(cfg.PG.User),
@@ -102,10 +79,74 @@ func NewConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func getEnv(key string) (string, error) {
-	value, exists := os.LookupEnv(key)
-	if !exists || value == "" {
-		return "", fmt.Errorf("environment variable %s not set", key)
+func (config *Config) readGrpcPort() error {
+	var ok bool
+	config.GRPC.Port, ok = os.LookupEnv("GRPC_PORT")
+	if !ok || config.GRPC.Port == "" {
+		return ErrGRPCPortNotSet
 	}
-	return value, nil
+	return nil
+}
+
+func (config *Config) readGrpcGatewayPort() error {
+	var ok bool
+	config.GRPC.GatewayPort, ok = os.LookupEnv("GRPC_GATEWAY_PORT")
+	if !ok || config.GRPC.GatewayPort == "" {
+		return ErrGRPCGatewayPortNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGHost() error {
+	var ok bool
+	config.PG.Host, ok = os.LookupEnv("POSTGRES_HOST")
+	if !ok || config.PG.Host == "" {
+		return ErrPostgresHostNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGPort() error {
+	var ok bool
+	config.PG.Port, ok = os.LookupEnv("POSTGRES_PORT")
+	if !ok || config.PG.Port == "" {
+		return ErrPostgresPortNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGUser() error {
+	var ok bool
+	config.PG.User, ok = os.LookupEnv("POSTGRES_USER")
+	if !ok || config.PG.User == "" {
+		return ErrPostgresUserNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGDB() error {
+	var ok bool
+	config.PG.DB, ok = os.LookupEnv("POSTGRES_DB")
+	if !ok || config.PG.DB == "" {
+		return ErrPostgresDBNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGPassword() error {
+	var ok bool
+	config.PG.Password, ok = os.LookupEnv("POSTGRES_PASSWORD")
+	if !ok || config.PG.Password == "" {
+		return ErrPostgresPasswordNotSet
+	}
+	return nil
+}
+
+func (config *Config) readPGMaxConn() error {
+	var ok bool
+	config.PG.MaxConn, ok = os.LookupEnv("POSTGRES_MAX_CONN")
+	if !ok || config.PG.MaxConn == "" {
+		return ErrPostgresMaxConnNotSet
+	}
+	return nil
 }
