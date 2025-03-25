@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"go.uber.org/zap"
 
 	"github.com/jackc/pgx/v5"
@@ -22,7 +23,7 @@ type postgresRepository struct {
 	logger *zap.Logger
 }
 
-func NewPostgresRepository(db *pgxpool.Pool, logger *zap.Logger) *postgresRepository {
+func New(db *pgxpool.Pool, logger *zap.Logger) *postgresRepository {
 	return &postgresRepository{
 		db:     db,
 		logger: logger,

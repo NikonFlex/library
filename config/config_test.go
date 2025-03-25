@@ -2,109 +2,93 @@ package config
 
 //
 //import (
-//	"os"
-//	"testing"
-//
 //	"github.com/stretchr/testify/require"
+//	"testing"
 //)
 //
-//func TestNewConfig_Success(t *testing.T) {
-//	GRPC_PORT := "50051"
-//	GRPC_GATEWAY_PORT := "8080"
-//	POSTGRES_DB := "godb"
-//	POSTGRES_USER := "nikongo"
-//	POSTGRES_PASSWORD := "go"
-//	POSTGRES_PORT := "5432"
-//	POSTGRES_HOST := "localhost"
-//	POSTGRES_MAX_CONN := "10"
+//func TestConfigSuccess(t *testing.T) {
+//	t.Run("Success", func(t *testing.T) {
+//		setup(t)
+//		cfg, err := New()
+//		require.NoError(t, err)
+//		require.Equal(t, "8081", cfg.GRPC.Port)
+//		require.Equal(t, "8080", cfg.GRPC.GatewayPort)
+//		require.Equal(t, "localhost", cfg.PG.Host)
+//		require.Equal(t, "5432", cfg.PG.Port)
+//		require.Equal(t, "go", cfg.PG.Password)
+//		require.Equal(t, "10", cfg.PG.MaxConn)
+//		require.Equal(t, "nikongo", cfg.PG.User)
+//		require.Equal(t, "godb", cfg.PG.DB)
 //
-//	os.Setenv("GRPC_PORT", GRPC_PORT)
-//	os.Setenv("GRPC_GATEWAY_PORT", GRPC_GATEWAY_PORT)
-//	os.Setenv("POSTGRES_DB", POSTGRES_DB)
-//	os.Setenv("POSTGRES_USER", POSTGRES_USER)
-//	os.Setenv("POSTGRES_PASSWORD", POSTGRES_PASSWORD)
-//	os.Setenv("POSTGRES_PORT", POSTGRES_PORT)
-//	os.Setenv("POSTGRES_HOST", POSTGRES_HOST)
-//	os.Setenv("POSTGRES_MAX_CONN", POSTGRES_MAX_CONN)
-//
-//	defer func() {
-//		os.Unsetenv("GRPC_PORT")
-//		os.Unsetenv("GRPC_GATEWAY_PORT")
-//		os.Unsetenv("POSTGRES_DB")
-//		os.Unsetenv("POSTGRES_USER")
-//		os.Unsetenv("POSTGRES_PASSWORD")
-//		os.Unsetenv("POSTGRES_PORT")
-//		os.Unsetenv("POSTGRES_HOST")
-//		os.Unsetenv("POSTGRES_MAX_CONN")
-//	}()
-//
-//	cfg, err := NewConfig()
-//	require.NoError(t, err)
-//	require.Equal(t, cfg.GRPC.Port, GRPC_PORT)
-//	require.Equal(t, cfg.GRPC.GatewayPort, GRPC_GATEWAY_PORT)
-//	require.Equal(t, cfg.PG.Port, POSTGRES_PORT)
-//	require.Equal(t, cfg.PG.DB, POSTGRES_DB)
-//	require.Equal(t, cfg.PG.Host, POSTGRES_HOST)
-//	require.Equal(t, cfg.PG.User, POSTGRES_USER)
-//	require.Equal(t, cfg.PG.Password, POSTGRES_PASSWORD)
-//	require.Equal(t, cfg.PG.MaxConn, POSTGRES_MAX_CONN)
+//	})
 //}
 //
-//func TestNewConfig_Failure(t *testing.T) {
-//	vars := []string{"GRPC_PORT", "GRPC_GATEWAY_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_PORT", "POSTGRES_HOST", "POSTGRES_MAX_CONN"}
+//func TestConfigFailures(t *testing.T) {
 //	tests := []struct {
-//		name          string
-//		envVar        string
-//		expectedError error
+//		name   string
+//		envVar string
+//		error  error
 //	}{
 //		{
-//			name:          "GRPC_PORT not set",
-//			envVar:        "GRPC_PORT",
-//			expectedError: ErrGRPCPortNotSet,
+//
+//			"GRPC_PORT not set",
+//			"GRPC_PORT",
+//			ErrGRPCPortNotSet,
 //		},
 //		{
-//			name:          "GRPC_GATEWAY_PORT not set",
-//			envVar:        "GRPC_GATEWAY_PORT",
-//			expectedError: ErrGRPCGatewayPortNotSet,
+//			"GRPC_GATEWAY_PORT not set",
+//			"GRPC_GATEWAY_PORT",
+//			ErrGRPCGatewayPortNotSet,
 //		},
 //		{
-//			name:          "POSTGRES_PORT not set",
-//			envVar:        "POSTGRES_PORT",
-//			expectedError: ErrPostgresPortNotSet,
+//			"POSTGRES_HOST not set",
+//			"POSTGRES_HOST",
+//			ErrPostgresHostNotSet,
 //		},
 //		{
-//			name:          "POSTGRES_DB not set",
-//			envVar:        "POSTGRES_DB",
-//			expectedError: ErrPostgresDBNotSet,
+//			"POSTGRES_PORT not set",
+//			"POSTGRES_PORT",
+//			ErrPostgresPortNotSet,
 //		},
 //		{
-//			name:          "POSTGRES_HOST not set",
-//			envVar:        "POSTGRES_HOST",
-//			expectedError: ErrPostgresHostNotSet,
+//			"POSTGRES_DB not set",
+//			"POSTGRES_DB",
+//			ErrPostgresDBNotSet,
 //		},
 //		{
-//			name:          "POSTGRES_USER not set",
-//			envVar:        "POSTGRES_USER",
-//			expectedError: ErrPostgresUserNotSet,
+//			"POSTGRES_USER not set",
+//			"POSTGRES_USER",
+//			ErrPostgresUserNotSet,
 //		},
 //		{
-//			name:          "POSTGRES_PASSWORD not set",
-//			envVar:        "POSTGRES_PASSWORD",
-//			expectedError: ErrPostgresPasswordNotSet,
+//			"POSTGRES_PASSWORD not set",
+//			"POSTGRES_PASSWORD",
+//			ErrPostgresPasswordNotSet,
+//		},
+//		{
+//			"POSTGRES_MAX_CONN not set",
+//			"POSTGRES_MAX_CONN",
+//			ErrPostgresMaxConnNotSet,
 //		},
 //	}
 //
 //	for _, test := range tests {
 //		t.Run(test.name, func(t *testing.T) {
-//			t.Parallel()
-//
-//			for _, envVar := range vars {
-//				os.Setenv(envVar, "random")
-//			}
-//			os.Unsetenv(test.envVar)
-//
-//			_, err := NewConfig()
-//			require.ErrorIs(t, err, test.expectedError)
+//			setup(t)
+//			t.Setenv(test.envVar, "")
+//			_, err := New()
+//			require.ErrorIs(t, err, test.error)
 //		})
 //	}
+//}
+//
+//func setup(t *testing.T) {
+//	t.Setenv("GRPC_PORT", "8081")
+//	t.Setenv("GRPC_GATEWAY_PORT", "8080")
+//	t.Setenv("POSTGRES_HOST", "localhost")
+//	t.Setenv("POSTGRES_PORT", "5432")
+//	t.Setenv("POSTGRES_DB", "godb")
+//	t.Setenv("POSTGRES_USER", "nikongo")
+//	t.Setenv("POSTGRES_PASSWORD", "go")
+//	t.Setenv("POSTGRES_MAX_CONN", "10")
 //}
