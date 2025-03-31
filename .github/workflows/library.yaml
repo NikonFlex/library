@@ -18,11 +18,14 @@ jobs:
           fetch-depth: 0
       - name: Ensure branch is up-to-date with main
         run: |
-          git fetch origin main
-          if git merge-base --is-ancestor origin/main @; then
-            echo 'Tests are already up-to-date'
+          set -e
+          git fetch origin
+          BRANCH="${GITHUB_HEAD_REF:-$(git rev-parse --abbrev-ref HEAD)}" 
+          if git log origin/main ^origin/"$BRANCH" --oneline | grep .; then
+            echo "Some commits from origin/main are missing in origin/$BRANCH"
+            exit 1
           else
-            echo 'Your tests have not been updated, try to rebase main' && exit 1
+            echo "All commits from origin/main are included in origin/$BRANCH"
           fi
       - name: Check for YAML and Test changes
         run: |
