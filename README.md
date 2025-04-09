@@ -24,27 +24,27 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE author
 (
-  id ...,
-  name ...,
-  created_at ...,
-  updated_at ...
+    id ...,
+    name ...,
+    created_at ...,
+    updated_at ...
 );
 
 -- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_author_timestamp() RETURNS TRIGGER AS
 $$
 BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
+    NEW.updated_at = now();
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
 
 CREATE OR REPLACE TRIGGER trigger_update_author_timestamp
-  BEFORE UPDATE
-  ON ...
-  FOR EACH ROW
+    BEFORE UPDATE
+    ON ...
+    FOR EACH ROW
 EXECUTE FUNCTION update_author_timestamp();
 
 
@@ -70,26 +70,26 @@ DROP INDEX ...;
 -- +goose Up
 CREATE TABLE book
 (
-  id ...,
-  name ...,
-  created_at ...,
-  updated_at ...
+    id ...,
+    name ...,
+    created_at ...,
+    updated_at ...
 );
 
 -- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_book_timestamp() RETURNS TRIGGER AS
 $$
 BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
+    NEW.updated_at = now();
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
 CREATE OR REPLACE TRIGGER trigger_update_book_timestamp
-  BEFORE UPDATE
-  ON ...
-  FOR EACH ROW
+    BEFORE UPDATE
+    ON ...
+    FOR EACH ROW
 EXECUTE FUNCTION update_book_timestamp();
 
 -- +goose Down
@@ -114,9 +114,9 @@ DROP INDEX ...;
 -- +goose Up
 CREATE TABLE author_book
 (
-  author_id ...,
-  book_id ...,
-  PRIMARY KEY (.. .)
+    author_id ...,
+    book_id ...,
+    PRIMARY KEY (.. .)
 );
 
 -- +goose Down
@@ -173,25 +173,25 @@ docker stop / docker rm - для остановки и удаления конт
 
 ```go
 type (
-Config struct {
-GRPC
-PG
-}
-
-GRPC struct {
-Port        string `env:"GRPC_PORT"`
-GatewayPort string `env:"GRPC_GATEWAY_PORT"`
-}
-
-PG struct {
-URL      string
-Host     string `env:"POSTGRES_HOST"`
-Port     string `env:"POSTGRES_PORT"`
-DB       string `env:"POSTGRES_DB"`
-User     string `env:"POSTGRES_USER"`
-Password string `env:"POSTGRES_PASSWORD"`
-MaxConn  string `env:"POSTGRES_MAX_CONN"`
-}
+    Config struct {
+        GRPC
+        PG
+    }
+    
+    GRPC struct {
+        Port        string `env:"GRPC_PORT"`
+        GatewayPort string `env:"GRPC_GATEWAY_PORT"`
+    }
+    
+    PG struct {
+        URL      string
+        Host     string `env:"POSTGRES_HOST"`
+        Port     string `env:"POSTGRES_PORT"`
+        DB       string `env:"POSTGRES_DB"`
+        User     string `env:"POSTGRES_USER"`
+        Password string `env:"POSTGRES_PASSWORD"`
+        MaxConn  string `env:"POSTGRES_MAX_CONN"`
+    }
 )
 ```
 
@@ -214,25 +214,25 @@ return entity.Book{}, err
 }
 defer tx.Rollback(ctx)
 
-const queryBook = `INSERT INTO book (name) VALUES ($1) RETURNING id, created_at, updated_at`
-err = tx.QueryRow(ctx, queryBook, book.Name).Scan(&book.ID, &book.CreatedAt, &book.UpdatedAt)
-if err != nil {
-return entity.Book{}, err
-}
+	const queryBook = `INSERT INTO book (name) VALUES ($1) RETURNING id, created_at, updated_at`
+	err = tx.QueryRow(ctx, queryBook, book.Name).Scan(&book.ID, &book.CreatedAt, &book.UpdatedAt)
+	if err != nil {
+		return entity.Book{}, err
+	}
 
-const queryAuthorBooks = `INSERT INTO author_book (author_id, book_id) VALUES ($1, $2)`
-for _, authorID := range book.AuthorIDs {
-_, err := tx.Exec(ctx, queryAuthorBooks, authorID, book.ID)
-if err != nil {
-return entity.Book{}, err
-}
-}
+	const queryAuthorBooks = `INSERT INTO author_book (author_id, book_id) VALUES ($1, $2)`
+	for _, authorID := range book.AuthorIDs {
+		_, err := tx.Exec(ctx, queryAuthorBooks, authorID, book.ID)
+		if err != nil {
+			return entity.Book{}, err
+		}
+	}
 
-if err := tx.Commit(ctx); err != nil {
-return entity.Book{}, err
-}
+	if err := tx.Commit(ctx); err != nil {
+		return entity.Book{}, err
+	}
 
-return book, nil
+	return book, nil
 }
 ```
 
@@ -253,7 +253,7 @@ message Book {
 }
 ```
 
-# HW 2 (database)
+# HW 2 (outbox)
 ## Часть 6
 С этой части начинается ДЗ `outbox`. Ветка с решением должна иметь название `outbox`. Важно, чтобы в PR не было diff'a старого ДЗ.
 Вы можете добиться этого, сделав rebase на `main` после проверки предыдущего ДЗ
@@ -323,6 +323,7 @@ type Outbox struct {
 При создании книги или автора вам необходимо асинхронно отправить `POST` запрос c `AuthorID` или `BookID` на `OUTBOX_AUTHOR_SEND_URL`
 или `OUTBOX_BOOK_SEND_URL`, соответственно.
 
+
 ## Унификация технологий
 
 Для удобства выполнения и проверки дз вводится ряд правил, унифицирующих используемые технологии
@@ -376,6 +377,9 @@ type Outbox struct {
 * описать, почему вы сделали именно такую схему в базе данных
 
 ## Сдача
+
+* Открыть pull request из ветки `hw` в ветку `main` **вашего репозитория**.
+
 * В описании PR заполнить количество часов, которые вы потратили на это задание.
 
 * Отправить заявку на ревью в соответствующей форме.
