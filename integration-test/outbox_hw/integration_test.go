@@ -1,6 +1,6 @@
-//go:build integration_test
+//go:build outbox_hw
 
-package integration
+package outbox_hw
 
 import (
 	"context"

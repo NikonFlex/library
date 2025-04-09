@@ -4,7 +4,7 @@
 // - protoc             v5.29.3
 // source: api/library/library.proto
 
-package database_hw
+package outbox_hw
 
 import (
 	context "context"
