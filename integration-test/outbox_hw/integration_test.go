@@ -1462,7 +1462,7 @@ func getLibraryExecutable(t *testing.T) string {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	binaryPath, err := resolveFilePath(filepath.Dir(wd), "library")
+	binaryPath, err := resolveFilePath(filepath.Dir(filepath.Dir(wd)), "library")
 	require.NoError(t, err, "you need to compile your library service, run make build")
 
 	return binaryPath
