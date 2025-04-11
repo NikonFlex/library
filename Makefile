@@ -40,15 +40,6 @@ lint:
 .PHONY: test
 test:
 	echo 'Running tests...'
-	
-	export POSTGRES_DB=godb && \
-	export POSTGRES_USER=nikongo && \
-	export POSTGRES_PASSWORD=go && \
-	export POSTGRES_PORT=5432 && \
-	export POSTGRES_HOST=localhost && \
-	export GRPC_PORT=8080 && \
-	export GRPC_GATEWAY_PORT=8081 && \
-	export POSTGRES_MAX_CONN=10 && \
 	${GO_TEST} ${GO_TEST_ARGS}
 
 .PHONY: update

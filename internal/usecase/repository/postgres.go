@@ -34,24 +34,23 @@ func (repo *postgresRepository) AddAuthor(ctx context.Context, author entity.Aut
 	repo.logger.Info("AddAuthor repo: started")
 	defer repo.logger.Info("AddAuthor repo: finished")
 
-	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
-		const query = `
+	const query = `
 		INSERT INTO author (name) 
 		VALUES ($1) 
 		RETURNING id
 	`
-		err := tx.QueryRow(ctx, query, author.Name).Scan(&author.ID)
-		if err != nil {
-			return entity.Author{}, fmt.Errorf("add author query failed: %w", err)
-		}
+	err := repo.db.QueryRow(ctx, query, author.Name).Scan(&author.ID)
+	if err != nil {
+		return entity.Author{}, fmt.Errorf("add author query failed: %w", err)
+	}
 
-		return author, nil
-	})
+	return author, nil
 }
 
 func (repo *postgresRepository) GetAuthor(ctx context.Context, authorID uuid.UUID) (entity.Author, error) {
 	repo.logger.Info("GetAuthor repo: started")
 	defer repo.logger.Info("GetAuthor repo: finished")
+
 	const query = `
         SELECT id, name
         FROM author 
@@ -74,6 +73,7 @@ func (repo *postgresRepository) GetAuthor(ctx context.Context, authorID uuid.UUI
 func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.UUID, name string) (entity.Author, error) {
 	repo.logger.Info("UpdateAuthor repo: started")
 	defer repo.logger.Info("UpdateAuthor repo: finished")
+
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Author, error) {
 		const query = `
         UPDATE author
@@ -98,6 +98,7 @@ func (repo *postgresRepository) UpdateAuthor(ctx context.Context, authorID uuid.
 func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (entity.Book, error) {
 	repo.logger.Info("AddBook repo: started")
 	defer repo.logger.Info("AddBook repo: finished")
+
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryAddBook = `
 		INSERT INTO book (name) 
@@ -124,6 +125,7 @@ func (repo *postgresRepository) AddBook(ctx context.Context, book entity.Book) (
 func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (entity.Book, error) {
 	repo.logger.Info("GetBook repo: started")
 	defer repo.logger.Info("GetBook repo: finished")
+
 	const query = `
         SELECT 
             id,
@@ -161,6 +163,7 @@ func (repo *postgresRepository) GetBook(ctx context.Context, bookID uuid.UUID) (
 func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID, name string, authorIDs uuid.UUIDs) (entity.Book, error) {
 	repo.logger.Info("UpdateBook repo: started")
 	defer repo.logger.Info("UpdateBook repo: finished")
+
 	return withTransaction(ctx, repo.db, repo.logger, func(tx pgx.Tx) (entity.Book, error) {
 		const queryUpdateBook = `
 		UPDATE book
@@ -200,6 +203,7 @@ func (repo *postgresRepository) UpdateBook(ctx context.Context, bookID uuid.UUID
 func (repo *postgresRepository) GetAuthorBooks(ctx context.Context, authorID uuid.UUID) ([]entity.Book, error) {
 	repo.logger.Info("GetAuthorBooks repo: started")
 	defer repo.logger.Info("GetAuthorBooks repo: finished")
+
 	const query = `
         SELECT 
             book.id, 
@@ -261,6 +265,7 @@ func isForeignKeyViolation(err error) bool {
 func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.Logger, fn func(pgx.Tx) (T, error)) (T, error) {
 	logger.Info("Transaction started")
 	defer logger.Info("Transaction finished")
+
 	var zero T
 	tx, err := db.Begin(ctx)
 	if err != nil {
@@ -290,29 +295,33 @@ func withTransaction[T any](ctx context.Context, db *pgxpool.Pool, logger *zap.L
 }
 
 func insertAuthorsBatch(ctx context.Context, tx pgx.Tx, bookID uuid.UUID, authorIDs []uuid.UUID) error {
-	batch := &pgx.Batch{}
+	if len(authorIDs) == 0 {
+		return nil
+	}
+
+	rows := make([][]interface{}, 0, len(authorIDs))
 	for _, authorID := range authorIDs {
-		batch.Queue(
-			"INSERT INTO author_book (author_id, book_id) VALUES ($1, $2)",
-			authorID, bookID,
-		)
+		rows = append(rows, []interface{}{authorID, bookID})
 	}
 
-	results := tx.SendBatch(ctx, batch)
+	tableName := pgx.Identifier{"author_book"}
+	columns := []string{"author_id", "book_id"}
 
-	for range authorIDs {
-		_, err := results.Exec()
+	_, err := tx.CopyFrom(
+		ctx,
+		tableName,
+		columns,
+		pgx.CopyFromRows(rows),
+	)
 
-		if isForeignKeyViolation(err) {
-			return entity.ErrAuthorNotFound
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if isForeignKeyViolation(pgErr) {
+				return entity.ErrAuthorNotFound
+			}
 		}
-		if err != nil {
-			return fmt.Errorf("batch insert failed: %w", err)
-		}
-	}
-
-	if err := results.Close(); err != nil {
-		return fmt.Errorf("insert batch closing failed: %w", err)
+		return fmt.Errorf("copy from failed: %w", err)
 	}
 
 	return nil
