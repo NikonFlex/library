@@ -40,15 +40,6 @@ lint:
 .PHONY: test
 test:
 	echo 'Running tests...'
-	
-	export POSTGRES_DB=godb && \
-	export POSTGRES_USER=nikongo && \
-	export POSTGRES_PASSWORD=go && \
-	export POSTGRES_PORT=5432 && \
-	export POSTGRES_HOST=localhost && \
-	export GRPC_PORT=8080 && \
-	export GRPC_GATEWAY_PORT=8081 && \
-	export POSTGRES_MAX_CONN=10 && \
 	${GO_TEST} ${GO_TEST_ARGS}
 
 .PHONY: update
@@ -97,8 +88,7 @@ bin-deps: .bin-deps
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 && \
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0 && \
 	go install golang.org/x/tools/cmd/goimports@v0.19.0 && \
-	go install github.com/envoyproxy/protoc-gen-validate@v1.2.1 && \
-	go install go.uber.org/mock/mockgen@latest
+	go install github.com/envoyproxy/protoc-gen-validate@v1.2.1
 
 .create-bin:
 	rm -rf ./bin
@@ -116,15 +106,11 @@ fast-generate: .generate
 	rm -rf ./docs/spec
 	mkdir -p ./docs/spec
 
-	rm -rf ./mocks-generated
-	mkdir ./mocks-generated
-
 	rm -rf ~/.easyp/
 
 	(PATH="$(PATH):$(LOCAL_BIN)" && $(EASYP_BIN) mod download && $(EASYP_BIN) generate)
 
 	$(GOIMPORTS_BIN) -w .
-	go generate ./...
 
 build:
 	go mod tidy
