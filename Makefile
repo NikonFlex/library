@@ -88,7 +88,8 @@ bin-deps: .bin-deps
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 && \
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0 && \
 	go install golang.org/x/tools/cmd/goimports@v0.19.0 && \
-	go install github.com/envoyproxy/protoc-gen-validate@v1.2.1
+	go install github.com/envoyproxy/protoc-gen-validate@v1.2.1 && \
+	go install go.uber.org/mock/mockgen@latest
 
 .create-bin:
 	rm -rf ./bin
@@ -106,11 +107,15 @@ fast-generate: .generate
 	rm -rf ./docs/spec
 	mkdir -p ./docs/spec
 
+	rm -rf ./mocks-generated
+	mkdir ./mocks-generated
+
 	rm -rf ~/.easyp/
 
 	(PATH="$(PATH):$(LOCAL_BIN)" && $(EASYP_BIN) mod download && $(EASYP_BIN) generate)
 
 	$(GOIMPORTS_BIN) -w .
+	go generate ./...
 
 build:
 	go mod tidy
